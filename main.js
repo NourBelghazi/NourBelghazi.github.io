@@ -1387,22 +1387,41 @@ function animate() {
   }
 
   renderer.render(scene, camera);
-  // Masquer l'écran d'intro — au moins 5s après le premier frame
+  // Afficher le bouton ENTER quand la scène est prête (au moins 5s)
   if (!window._introHidden) {
     window._introHidden = true;
     setTimeout(() => {
+      const hint = document.getElementById('intro-hint');
+      if (hint) {
+        hint.textContent = '[ CLIQUER / APPUYER POUR ENTRER ]';
+        hint.style.color = '#00ffaa';
+        hint.style.fontSize = '22px';
+        hint.style.cursor = 'pointer';
+        hint.style.letterSpacing = '2px';
+      }
+      // Déclencher l'entrée — clic OU touche
+      function dismissIntro() {
+        const intro = document.getElementById('intro-screen');
+        if (!intro || intro._dismissing) return;
+        intro._dismissing = true;
+        // 🔊 Démarrer l'audio ICI (1ère interaction → autoplay policy satisfaite)
+        buildTVAudio();
+        if (tvAudioCtx && tvAudioCtx.state === 'suspended') {
+          tvAudioCtx.resume().then(() => { if (soundOn) startTVSound(); });
+        } else {
+          if (soundOn) startTVSound();
+        }
+        _pendingTVStart = false;
+        intro.style.opacity = '0';
+        setTimeout(() => intro.remove(), 900);
+      }
       const intro = document.getElementById('intro-screen');
       if (intro) {
-        intro.style.opacity = '0';
-        setTimeout(() => {
-          intro.remove();
-          // ✅ Démarrer le son TV automatiquement dès la fin du loading
-          if (soundOn) startTVSound();
-        }, 900);
-      } else {
-        if (soundOn) startTVSound();
+        intro.addEventListener('click', dismissIntro, { once: true });
+        intro.addEventListener('keydown', dismissIntro, { once: true });
+        document.addEventListener('keydown', dismissIntro, { once: true });
       }
-    }, 5000);
+    }, 4500);
   }
 }
 animate();
@@ -1490,18 +1509,28 @@ function toggleTV() {
   tvCanvas.classList.toggle('active', tvActive);
 }
 
-// Préparer l'AudioContext dès la 1ère interaction (obligatoire pour les navigateurs)
-// mais NE PAS démarrer le son ici — il démarre automatiquement à la fin du loading
+// Démarrer le son TV à la première interaction utilisateur si soundOn=true
+// (les navigateurs bloquent l'audio sans geste préalable)
 let tvAudioPrimed = false;
+let _pendingTVStart = false; // true si on veut démarrer le son dès que possible
+
 function primeAudioCtx() {
   if (tvAudioPrimed) return;
   tvAudioPrimed = true;
-  buildTVAudio(); // crée le contexte sans démarrer le son
-  if (tvAudioCtx && tvAudioCtx.state === 'suspended') tvAudioCtx.resume();
+  buildTVAudio();
+  if (tvAudioCtx && tvAudioCtx.state === 'suspended') {
+    tvAudioCtx.resume().then(() => {
+      if (_pendingTVStart && soundOn) startTVSound();
+      _pendingTVStart = false;
+    });
+  } else if (_pendingTVStart && soundOn) {
+    startTVSound();
+    _pendingTVStart = false;
+  }
 }
-document.addEventListener('click', primeAudioCtx, { once: true });
-document.addEventListener('mousemove', primeAudioCtx, { once: true });
-document.addEventListener('keydown', primeAudioCtx, { once: true });
+['click', 'keydown', 'touchstart', 'mousemove'].forEach(ev =>
+  document.addEventListener(ev, primeAudioCtx, { once: true })
+);
 document.addEventListener('keydown', e => {
   if (e.key === 't' || e.key === 'T') toggleTV(); // T garde le toggle visuel
   primeAudioCtx(); // prépare l'AudioContext si pas encore fait
