@@ -1638,8 +1638,38 @@ function contactSend() {
     setTimeout(() => document.getElementById('contact-msg').style.borderColor = '', 1200);
     return;
   }
-  window.location.href = `mailto:${OWNER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  closeContact();
+
+  const mailtoUrl = `mailto:${OWNER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(OWNER_EMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  // Afficher un panneau de succès avec liens alternatifs
+  const modal = document.getElementById('modal-contact');
+  const inner = modal.querySelector('.modal-inner');
+  inner.innerHTML = `
+    <button class="modal-close" onclick="closeContact()">✕</button>
+    <h2 style="font-family:'Courier Prime',monospace;font-size:18px;letter-spacing:2px;margin-bottom:14px;color:#1a0f00;">✉ MESSAGE PRÊT</h2>
+    <p style="font-family:'Courier Prime',monospace;font-size:12px;color:#4a3010;margin-bottom:20px;line-height:1.7;">
+      Choisis comment envoyer :
+    </p>
+    <a href="${gmailUrl}" target="_blank" rel="noopener" onclick="closeContact()" style="
+      display:block;width:100%;box-sizing:border-box;text-align:center;
+      font-family:'Courier Prime',monospace;font-size:13px;letter-spacing:2px;font-weight:700;
+      padding:12px;background:#1a3a1a;color:#f2e8cc;border:none;border-radius:2px;
+      text-decoration:none;margin-bottom:10px;cursor:pointer;">
+      ✉ OUVRIR GMAIL
+    </a>
+    <a href="${mailtoUrl}" onclick="closeContact()" style="
+      display:block;width:100%;box-sizing:border-box;text-align:center;
+      font-family:'Courier Prime',monospace;font-size:12px;letter-spacing:1.5px;
+      padding:10px;background:rgba(80,45,10,0.08);color:#4a2a08;
+      border:1px solid rgba(80,45,10,0.3);border-radius:2px;
+      text-decoration:none;margin-bottom:14px;cursor:pointer;">
+      Ouvrir client mail (Outlook…)
+    </a>
+    <p style="font-family:'Courier Prime',monospace;font-size:11px;color:#8a6830;text-align:center;">
+      ou écris directement à <strong>${OWNER_EMAIL}</strong>
+    </p>
+  `;
 }
 
 // Close contact modal on backdrop click
