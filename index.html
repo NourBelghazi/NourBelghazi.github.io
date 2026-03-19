@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NB.DEV — RETRO PORTFOLIO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- SVG filters (chromatic aberration) -->
+  <svg id="svg-filters" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="ca-filter" color-interpolation-filters="sRGB">
+        <!-- Isolate R, G, B channels -->
+        <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+          result="r" />
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+          result="g" />
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+          result="b" />
+        <!-- Offset R left, B right — classic lens fringing -->
+        <feOffset in="r" dx="-2" dy="0" result="r2" />
+        <feOffset in="b" dx="2" dy="0" result="b2" />
+        <!-- Additive recombine -->
+        <feComposite in="r2" in2="g" operator="arithmetic" k2="1" k3="1" result="rg" />
+        <feComposite in="rg" in2="b2" operator="arithmetic" k2="1" k3="1" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- ▓░ INTRO / LOADING SCREEN ────────────────────────── -->
+  <div id="intro-screen">
+    <div id="intro-scanlines"></div>
+    <div id="intro-content">
+      <div id="intro-top">NB.DEV <span id="intro-blink">█</span></div>
+      <div id="intro-lines"></div>
+      <div id="intro-hint">[ loading environment… ]</div>
+    </div>
+  </div>
+
+  <!-- Three.js canvas goes here -->
+  <div id="canvas-wrap"></div>
+
+  <!-- Film grain overlay (animated via JS) -->
+  <canvas id="grain-overlay"></canvas>
+
+  <!-- TV Interference overlay — toggle avec bouton ou T -->
+  <canvas id="tv-static"></canvas>
+  <button id="tv-hint" onclick="toggleSound()" style="
+  position:fixed; top:14px; left:18px; z-index:99999;
+  font-size:26px; background:none; border:none;
+  padding:4px; cursor:pointer; line-height:1;
+">🔊</button>
+
+  <!-- ✉ Mail button -->
+  <button id="mail-btn" onclick="openContact()" title="Contact me" style="
+  position:fixed; top:14px; right:18px; z-index:99999;
+  font-size:22px; background:none; border:none;
+  padding:4px 6px; cursor:pointer; line-height:1;
+  color:#fff; opacity:0.75; transition:opacity 0.2s;
+  font-family:'Courier Prime',monospace; letter-spacing:1px;
+" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.75">✉</button>
+
+  <!-- Contact Modal -->
+  <div id="modal-contact" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-paper" style="max-width:440px; padding:36px 36px 32px; position:relative;">
+      <button class="modal-close" onclick="closeContact()">✕</button>
+      <h2
+        style="font-family:'Courier Prime',monospace; font-size:18px; letter-spacing:2px; margin-bottom:6px; color:#1a0f00;">
+        CONTACT</h2>
+      <p style="font-family:'Courier Prime',monospace; font-size:13px; color:#4a3010; margin-bottom:24px;">Send me a
+        message — your mail client will open.</p>
+      <label
+        style="font-family:'Courier Prime',monospace; font-size:11px; letter-spacing:1.5px; color:#6a4820; display:block; margin-bottom:6px;">SUBJECT</label>
+      <input id="contact-subject" type="text" placeholder="Hello Nour!" style="
+      width:100%; box-sizing:border-box;
+      font-family:'Courier Prime',monospace; font-size:14px;
+      padding:9px 12px; border:1px solid rgba(80,45,10,0.35);
+      background:#faf5e8; color:#1a0f00; border-radius:2px;
+      outline:none; margin-bottom:16px;
+    ">
+      <label
+        style="font-family:'Courier Prime',monospace; font-size:11px; letter-spacing:1.5px; color:#6a4820; display:block; margin-bottom:6px;">MESSAGE</label>
+      <textarea id="contact-msg" rows="5" placeholder="Write your message here…" style="
+      width:100%; box-sizing:border-box; resize:vertical;
+      font-family:'Courier Prime',monospace; font-size:14px;
+      padding:10px 12px; border:1px solid rgba(80,45,10,0.35);
+      background:#faf5e8; color:#1a0f00; border-radius:2px;
+      outline:none; margin-bottom:20px;
+    "></textarea>
+      <button onclick="contactSend()" style="
+      width:100%; font-family:'Courier Prime',monospace;
+      font-size:12px; letter-spacing:2px; font-weight:700;
+      padding:11px; background:#1a1a1a; color:#f2e8cc;
+      border:none; border-radius:2px; cursor:pointer; transition:opacity 0.15s;
+    " onmouseenter="this.style.opacity=0.85" onmouseleave="this.style.opacity=1">SEND ✉</button>
+    </div>
+  </div>
+
+  <!-- CRT Overlays (on top of canvas) -->
+  <div class="scanlines"></div>
+  <div class="crt-vignette"></div>
+  <div class="crosshair">+</div>
+  <div id="hover-label" class="hover-label"></div>
+
+  <!-- ═══════════ MODALS ═══════════ -->
+
+  <!-- CV Modal -->
+  <div class="modal" id="modal-cv" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-cv-viewer">
+      <div class="cv-viewer-toolbar">
+        <span class="cv-viewer-title">📄 CURRICULUM VITAE</span>
+        <div class="cv-viewer-actions">
+          <a class="cv-dl-btn" href="cv.pdf" download="CV_NourBelghazi.pdf">⬇ TÉLÉCHARGER</a>
+          <button class="modal-close" data-close="modal-cv">✕ FERMER [ESC]</button>
+        </div>
+      </div>
+      <iframe id="cv-iframe" src="cv.pdf" title="CV — Nour Belghazi"
+        style="width:100%;height:100%;border:none;display:block;"></iframe>
+    </div>
+  </div>
+
+  <!-- PAC-MAN Project Card -->
+  <div class="modal" id="modal-pacman" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-project">
+      <button class="modal-close" data-close="modal-pacman">✕</button>
+      <div class="proj-body">
+        <div class="proj-header">
+          <h2 class="proj-title">PAC-MAN</h2>
+          <div class="proj-tags"><span>Java</span><span>Swing</span></div>
+        </div>
+        <p class="proj-desc">A faithful Pac-Man clone built in Java with Swing — power pellets, scared ghosts, combo
+          scoring, cherry bonuses, tunnel wrapping and progressive level difficulty.</p>
+        <div class="proj-play-row">
+          <a class="proj-play-btn" href="games/pacman/index.html" target="_blank" rel="noopener">▶ PLAY</a>
+          <span class="proj-play-note">Java to Web transpilation using TeaVM.</span>
+        </div>
+      </div>
+      <img class="proj-screenshot" src="https://github.com/user-attachments/assets/13968b4c-4309-4f0a-aaf3-c7591eb200aa"
+        alt="Pac-Man screenshot" loading="lazy">
+      <div class="proj-footer">
+        <a class="proj-link" href="https://github.com/NourBelghazi/PacMan" target="_blank" rel="noopener">View on GitHub
+          →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- DINO ADVENTURE Project Card -->
+  <div class="modal" id="modal-dino" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-project">
+      <button class="modal-close" data-close="modal-dino">✕</button>
+      <div class="proj-body">
+        <div class="proj-header">
+          <h2 class="proj-title">CHROME DINOSAUR</h2>
+          <div class="proj-tags"><span>Java</span><span>Swing</span></div>
+        </div>
+        <p class="proj-desc">A Java/Swing recreation of the Chrome offline Dino game — ducking, animated birds, big
+          cacti, scrolling track, clouds and progressive speed difficulty.</p>
+        <div class="proj-play-row">
+          <a class="proj-play-btn" href="games/dino/index.html" target="_blank" rel="noopener">▶ PLAY</a>
+          <span class="proj-play-note">Java to Web transpilation using TeaVM.</span>
+        </div>
+      </div>
+      <img class="proj-screenshot" src="assets/dino-preview.png" alt="Dinosaur game screenshot" loading="lazy">
+      <div class="proj-footer">
+        <a class="proj-link" href="https://github.com/NourBelghazi/ChromeDinosaur" target="_blank" rel="noopener">View
+          on GitHub →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- RETRO SNAKE Project Card -->
+  <div class="modal" id="modal-snake" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-project modal-project--noimg">
+      <button class="modal-close" data-close="modal-snake">✕</button>
+      <div class="proj-body">
+        <div class="proj-header">
+          <h2 class="proj-title">RETRO SNAKE</h2>
+          <div class="proj-tags"><span>JavaScript</span><span>Canvas</span></div>
+        </div>
+        <p class="proj-desc">Classic grid-based Snake built with vanilla JS and Canvas API — smooth controls, particle
+          effects on food collection and persistent local high-score.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT CATALOG MANAGER Project Card -->
+  <div class="modal" id="modal-ordi" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-project modal-project--noimg">
+      <button class="modal-close" data-close="modal-ordi">✕</button>
+      <div class="proj-body">
+        <div class="proj-header">
+          <h2 class="proj-title">PRODUCT CATALOG MANAGER</h2>
+          <div class="proj-tags"><span>C++</span><span>OOP</span></div>
+        </div>
+        <p class="proj-desc">A C++ catalog management system with polymorphic product types (<code>Electronique</code>,
+          <code>Vetement</code>), smart pointer lifetime, design-by-contract exceptions and auto-generated product
+          codes.</p>
+        <a class="proj-link" href="https://github.com/NourBelghazi/product-catalog-manager" target="_blank"
+          rel="noopener">View on GitHub →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- RAY-TRACER Project Card -->
+  <div class="modal" id="modal-postit" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-project modal-project--noimg">
+      <button class="modal-close" data-close="modal-postit">✕</button>
+      <div class="proj-body">
+        <div class="proj-header">
+          <h2 class="proj-title">RAY-TRACER</h2>
+          <div class="proj-tags"><span>C++</span><span>In Progress</span></div>
+        </div>
+        <p class="proj-desc">A physically-based ray tracer in C++ — implements direct light transport, reflections and
+          shadow casting with custom math primitives. Work in progress.</p>
+        <a class="proj-link" href="https://github.com/NourBelghazi/ray-tracer" target="_blank" rel="noopener">View on
+          GitHub →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATIBLOC Project Card -->
+  <div class="modal" id="modal-casque" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-project modal-project--noimg">
+      <button class="modal-close" data-close="modal-casque">✕</button>
+      <div class="proj-body">
+        <div class="proj-header">
+          <h2 class="proj-title">BATIBLOC</h2>
+          <div class="proj-tags"><span>In Progress</span></div>
+        </div>
+        <p class="proj-desc">A construction & architecture simulation — modular block placement and structural integrity
+          mechanics. Work in progress.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVRES -->
+  <div class="modal" id="modal-livres" role="dialog" aria-modal="true">
+    <div class="modal-inner modal-project modal-project--noimg">
+      <button class="modal-close" data-close="modal-livres">✕</button>
+      <div class="proj-body">
+        <div class="proj-header">
+          <h2 class="proj-title">READING LIST</h2>
+          <div class="proj-tags"><span>C++</span><span>Computer Science</span></div>
+        </div>
+
+        <div class="book-entry">
+          <img class="book-cover" src="https://covers.openlibrary.org/b/isbn/1798834065-M.jpg"
+            alt="C++17 In Detail cover" loading="lazy">
+          <div class="book-info">
+            <p class="book-title"><a class="book-link" href="https://www.amazon.ca/dp/1798834065" target="_blank"
+                rel="noopener">C++17 In Detail</a></p>
+            <p class="book-author">Bartłomiej Filipek</p>
+            <div class="book-progress-wrap">
+              <div class="book-progress-bar" style="width:40%"></div>
+            </div>
+            <span class="book-progress-label">4 / 10</span>
+          </div>
+        </div>
+
+        <div class="book-entry">
+          <img class="book-cover" src="https://images-na.ssl-images-amazon.com/images/P/B0B1CDKZXL.01.L.jpg"
+            alt="C++ Best Practices cover" loading="lazy">
+          <div class="book-info">
+            <p class="book-title"><a class="book-link" href="https://www.amazon.ca/dp/B0B1CDKZXL" target="_blank"
+                rel="noopener">C++ Best Practices</a></p>
+            <p class="book-author">Jason Turner</p>
+            <div class="book-progress-wrap">
+              <div class="book-progress-bar" style="width:50%"></div>
+            </div>
+            <span class="book-progress-label">5 / 10</span>
+          </div>
+        </div>
+
+        <div class="book-entry">
+          <img class="book-cover" src="https://covers.openlibrary.org/b/isbn/048648582X-M.jpg"
+            alt="Data Structures and Algorithm Analysis cover" loading="lazy">
+          <div class="book-info">
+            <p class="book-title"><a class="book-link" href="https://www.amazon.ca/dp/048648582X" target="_blank"
+                rel="noopener">Data Structures & Algorithm Analysis in C++</a></p>
+            <p class="book-author">Mark Allen Weiss</p>
+            <div class="book-progress-wrap">
+              <div class="book-progress-bar" style="width:30%"></div>
+            </div>
+            <span class="book-progress-label">3 / 10</span>
+          </div>
+        </div>
+
+        <div class="book-entry">
+          <img class="book-cover" src="https://covers.openlibrary.org/b/isbn/1098113160-M.jpg"
+            alt="C++ Software Design cover" loading="lazy">
+          <div class="book-info">
+            <p class="book-title"><a class="book-link" href="https://www.amazon.ca/dp/1098113160" target="_blank"
+                rel="noopener">C++ Software Design</a></p>
+            <p class="book-author">Klaus Iglberger</p>
+            <div class="book-progress-wrap">
+              <div class="book-progress-bar" style="width:30%"></div>
+            </div>
+            <span class="book-progress-label">3 / 10</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js (global build, works with file:// protocol) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="cables_data.js"></script>
+  <script src="main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+# Java source & build (not needed for deployment)
+games_tmp/
+
+# node / serve
+node_modules/
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,950 @@
+/* =====================================================
+   RETRO PORTFOLIO 3D — style.css
+   ===================================================== */
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #030201;
+  font-family: 'VT323', monospace;
+  cursor: crosshair;
+}
+
+/* ── INTRO / LOADING SCREEN ──────────────────────────── */
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.85s ease;
+  overflow: hidden;
+}
+
+#intro-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom,
+      transparent 0px, transparent 3px,
+      rgba(0, 255, 120, 0.03) 3px, rgba(0, 255, 120, 0.03) 4px);
+}
+
+#intro-content {
+  text-align: left;
+  max-width: 540px;
+  width: 90%;
+  font-family: 'VT323', monospace;
+  color: #00ff88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.7);
+}
+
+#intro-top {
+  font-size: 52px;
+  letter-spacing: 6px;
+  margin-bottom: 28px;
+  line-height: 1;
+  color: #00ffaa;
+  text-shadow: 0 0 18px rgba(0, 255, 170, 0.85);
+}
+
+@keyframes blinkCursor {
+
+  0%,
+  49% {
+    opacity: 1
+  }
+
+  50%,
+  100% {
+    opacity: 0
+  }
+}
+
+#intro-blink {
+  animation: blinkCursor 0.9s infinite;
+}
+
+#intro-lines {
+  font-size: 22px;
+  line-height: 1.8;
+  color: #00cc66;
+  min-height: 160px;
+  white-space: pre;
+}
+
+#intro-lines .dim {
+  color: #006633;
+}
+
+#intro-lines .hi {
+  color: #00ffaa;
+}
+
+#intro-lines .warn {
+  color: #f0c040;
+}
+
+#intro-lines .err {
+  color: #ff5555;
+}
+
+#intro-hint {
+  margin-top: 28px;
+  font-size: 18px;
+  color: #004d29;
+  letter-spacing: 2px;
+  animation: blinkCursor 1.4s infinite;
+}
+
+#canvas-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  /* CA first, then FNAF-style amber tint */
+  filter: url(#ca-filter) sepia(0.28) hue-rotate(-8deg) contrast(1.14) brightness(1.12) saturate(0.88);
+}
+
+/* ── FILM GRAIN OVERLAY ── */
+#grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+}
+
+#canvas-wrap canvas {
+  display: block;
+}
+
+/* ── TV INTERFERENCE OVERLAY ── */
+#tv-static {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  mix-blend-mode: screen;
+}
+
+#tv-static.active {
+  opacity: 0.82;
+}
+
+/* ── TV HINT BADGE ── */
+.tv-hint {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: 9999;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #ffe030;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #ffe030;
+  padding: 5px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px #ffe030;
+  box-shadow: 0 0 12px rgba(255, 224, 48, 0.3);
+}
+
+.tv-hint:hover {
+  background: rgba(255, 224, 48, 0.2);
+}
+
+.tv-hint.on {
+  color: #555;
+  border-color: #444;
+  text-decoration: line-through;
+  text-shadow: none;
+  box-shadow: none;
+}
+
+
+/* ── CRT OVERLAYS ── */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg,
+      transparent 0, transparent 3px,
+      rgba(0, 0, 0, 0.28) 3px, rgba(0, 0, 0, 0.28) 4px);
+  animation: scanScroll 8s linear infinite;
+}
+
+@keyframes scanScroll {
+  to {
+    background-position: 0 100vh;
+  }
+}
+
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  background:
+    /* Main vignette — tighter dark edge */
+    radial-gradient(ellipse 72% 68% at 50% 50%,
+      transparent 30%, rgba(0, 0, 0, 0.55) 72%, rgba(0, 0, 0, 0.92) 100%),
+    /* Top/bottom bars */
+    linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0%, transparent 14%, transparent 84%, rgba(0, 0, 0, 0.28) 100%),
+    /* Lamp bloom — warm glow upper-right to simulate lamp halation */
+    radial-gradient(ellipse 28% 24% at 78% 28%,
+      rgba(255, 200, 80, 0.06) 0%, transparent 100%);
+}
+
+.crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 12;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  color: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+/* ── HOVER LABEL ── */
+.hover-label {
+  position: fixed;
+  z-index: 15;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #ffb840;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 180, 60, 0.4);
+  padding: 3px 14px;
+  border-radius: 3px;
+  text-shadow: 0 0 10px #ffb840;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  transform: translate(-50%, -140%);
+}
+
+.hover-label.visible {
+  opacity: 1;
+}
+
+/* ── MODALS ── */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  cursor: default;
+}
+
+.modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-inner {
+  position: relative;
+  border-radius: 4px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: popIn .22s ease;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.88) translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  color: #ff4040;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid #ff4040;
+  padding: 3px 12px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  z-index: 5;
+  margin-bottom: 6px;
+}
+
+.modal-close:hover {
+  background: #ff4040;
+  color: #000;
+}
+
+/* ── CV MODAL ── */
+.modal-paper {
+  width: min(700px, 93vw);
+  background: linear-gradient(168deg, #f7f2e4 0%, #eee6c6 100%);
+  border: 8px solid #5a3a10;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.97);
+  color: #1a0e04;
+  padding: 28px 34px 34px;
+  filter: sepia(0.1);
+}
+
+.modal-paper .modal-close {
+  color: #7a1800;
+  border-color: #7a1800;
+}
+
+.modal-paper .modal-close:hover {
+  background: #7a1800;
+  color: #f7f2e4;
+}
+
+.cv-full {
+  font-family: 'Courier Prime', monospace;
+}
+
+.cv-header-block {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.cv-header-block h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: #1a0800;
+}
+
+.cv-role {
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  color: #5a3a10;
+  margin: 5px 0;
+}
+
+.cv-contacts {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-size: 11px;
+  color: #6a4a1a;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.cv-rule {
+  border: none;
+  border-top: 2px solid #9a7a40;
+  margin: 12px 0;
+}
+
+.cv-sec {
+  margin: 16px 0;
+}
+
+.cv-sec h2 {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #3a1800;
+  border-bottom: 1px solid #b09050;
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+}
+
+.cv-sec p {
+  font-size: 12px;
+  line-height: 1.75;
+  color: #2a1600;
+}
+
+.cv-entry-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.cv-entry-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2a1000;
+}
+
+.cv-entry-date {
+  font-size: 11px;
+  color: #7a5a20;
+}
+
+.cv-entry ul {
+  font-size: 11.5px;
+  padding-left: 20px;
+  line-height: 1.8;
+  color: #2a1600;
+}
+
+.cv-proj {
+  font-size: 12px;
+  margin: 8px 0;
+  color: #2a1600;
+  line-height: 1.65;
+}
+
+.cv-proj-name {
+  font-weight: 700;
+  color: #5a2000;
+}
+
+.skill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sk {
+  font-size: 11px;
+  padding: 3px 12px;
+  border: 1px solid #9a7a40;
+  color: #4a2a00;
+  background: rgba(160, 120, 40, 0.1);
+}
+
+.modal-paper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-paper::-webkit-scrollbar-track {
+  background: #d8c898;
+}
+
+.modal-paper::-webkit-scrollbar-thumb {
+  background: #8a6a30;
+}
+
+/* ── GAME PLACEHOLDER MODAL ── */
+.modal-game {
+  background: #020402;
+  border: 2px solid #00ff41;
+  box-shadow: 0 0 60px rgba(0, 255, 65, 0.15), inset 0 0 40px rgba(0, 0, 0, 0.95);
+  padding: 50px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 380px;
+}
+
+.coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.cs-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.cs-tape-art {
+  font-size: 36px;
+}
+
+.cs-msg {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  color: rgba(0, 255, 65, 0.6);
+  letter-spacing: 3px;
+}
+
+.cs-blink {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: rgba(0, 255, 65, 0.4);
+  animation: blink 1.2s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.pacman-col {
+  color: #ffd700;
+  text-shadow: 0 0 12px #ffd700;
+}
+
+.dino-col {
+  color: #88ee88;
+  text-shadow: 0 0 12px #88ee88;
+}
+
+.snake-col {
+  color: #cc66ff;
+  text-shadow: 0 0 12px #cc66ff;
+}
+
+/* ── PROJECT CARD — style feuille de papier vieilli ── */
+.modal-project {
+  width: min(780px, 95vw);
+  background:
+    /* Taches de café subtiles */
+    radial-gradient(ellipse 12% 8% at 82% 18%, rgba(90, 50, 10, 0.07) 0%, transparent 100%),
+    radial-gradient(ellipse 8% 5% at 15% 72%, rgba(80, 45, 8, 0.05) 0%, transparent 100%),
+    /* Base papier vieilli */
+    linear-gradient(160deg, #f2e8cc 0%, #ede0b6 35%, #e8d9a8 65%, #ecddb0 100%);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 0 #c8a870,
+    0 4px 1px rgba(0, 0, 0, 0.15),
+    0 8px 40px rgba(0, 0, 0, 0.85),
+    inset 0 0 80px rgba(120, 80, 20, 0.06);
+  font-family: 'Courier Prime', monospace;
+  color: #1a0e04;
+  position: relative;
+  border: 1px solid #b89a60;
+  border-bottom: 3px solid #a08040;
+}
+
+/* Lignes horizontales de réglure */
+.modal-project::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(to bottom,
+      transparent 0, transparent 27px,
+      rgba(100, 70, 20, 0.07) 27px, rgba(100, 70, 20, 0.07) 28px);
+}
+
+/* Close — tampon rouge vintage */
+.modal-project .modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 20;
+  background: transparent;
+  border: 2px solid #8b1a0a;
+  color: #8b1a0a;
+  font-size: 13px;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  transition: background 0.15s, color 0.15s;
+  opacity: 0.75;
+}
+
+.modal-project .modal-close:hover {
+  background: #8b1a0a;
+  color: #f2e8cc;
+  opacity: 1;
+}
+
+/* Screenshot — cadre photo avec bord papier */
+.proj-screenshot {
+  width: calc(100% - 48px);
+  height: auto;
+  max-height: 420px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  margin: 0 24px;
+  border: 1px solid #b89a60;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.25), inset 0 0 0 3px rgba(255, 240, 200, 0.5);
+  filter: sepia(0.18) contrast(0.95);
+  background: #e8d8a0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Footer sous le screenshot */
+.proj-footer {
+  padding: 18px 28px 26px;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.proj-footer .proj-link {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Body — zone de texte */
+.proj-body {
+  padding: 30px 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* No image — padding haut plus grand */
+.modal-project--noimg .proj-body {
+  padding-top: 44px;
+}
+
+/* Header : icône + titre + tags */
+.proj-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.proj-icon {
+  font-size: 42px;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(1px 1px 0 rgba(80, 40, 0, 0.2));
+}
+
+.proj-header>div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* Titre machine à écrire avec underline encre */
+.proj-title {
+  font-family: 'VT323', monospace;
+  font-size: 30px;
+  letter-spacing: 3px;
+  color: #2a1200;
+  margin: 0;
+  line-height: 1;
+  border-bottom: 2px solid rgba(80, 40, 10, 0.25);
+  padding-bottom: 4px;
+}
+
+/* Tags — tampons encre foncée */
+.proj-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.proj-tags span {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 2px 10px;
+  border: 1.5px solid rgba(60, 30, 5, 0.45);
+  color: rgba(60, 30, 5, 0.75);
+  border-radius: 1px;
+  background: rgba(120, 70, 10, 0.06);
+}
+
+/* Divider — trait d'encre horizontal */
+.proj-body>hr {
+  border: none;
+  border-top: 1px solid rgba(100, 60, 10, 0.2);
+  margin: 0;
+}
+
+/* Description — machine à écrire */
+.proj-desc {
+  font-size: 14px;
+  line-height: 1.85;
+  color: #2c1804;
+  margin: 0;
+}
+
+.proj-desc code {
+  font-family: 'Courier Prime', monospace;
+  background: rgba(80, 40, 0, 0.07);
+  border: 1px solid rgba(80, 40, 0, 0.18);
+  padding: 0 5px;
+  border-radius: 1px;
+  font-size: 12.5px;
+  color: #4a2200;
+}
+
+/* ── READING LIST — book entries ── */
+.book-entry {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(80, 45, 10, 0.15);
+}
+
+.book-entry:last-child {
+  border-bottom: none;
+}
+
+.book-cover {
+  width: 60px;
+  height: 80px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #b89a60;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.22);
+  filter: sepia(0.12);
+  background: #e8d8a0;
+}
+
+.book-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.book-title {
+  font-family: 'Courier Prime', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e0f04;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.book-author {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  color: rgba(60, 30, 5, 0.6);
+  margin: 0;
+  font-style: italic;
+}
+
+.book-progress-wrap {
+  width: 100%;
+  height: 7px;
+  background: rgba(80, 45, 10, 0.12);
+  border: 1px solid rgba(80, 45, 10, 0.20);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.book-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #5a2e08, #8b4a14);
+  border-radius: 1px;
+  transition: width 0.6s ease;
+}
+
+.book-progress-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  color: rgba(60, 30, 5, 0.55);
+  align-self: flex-end;
+}
+
+.book-link {
+  color: #3a1800;
+  text-decoration: underline dotted rgba(60, 30, 5, 0.4);
+  transition: color 0.15s;
+}
+
+.book-link:hover {
+  color: #7a3010;
+  text-decoration: underline;
+}
+
+/* ── PLAY button (TeaVM) ── */
+.proj-play-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.proj-play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #f2e8cc;
+  background: #1a3a1a;
+  padding: 9px 20px;
+  border-radius: 2px;
+  text-decoration: none;
+  border: 1px solid #2a5a2a;
+  box-shadow: 2px 2px 0 #0a1a0a;
+  transition: opacity 0.15s, transform 0.12s;
+}
+
+.proj-play-btn:hover {
+  opacity: 0.85;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #0a1a0a;
+}
+
+.proj-play-note {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #000000;
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* GitHub link — tampon/cachet vintage */
+.proj-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #f2e8cc;
+  background: #3a1e08;
+  padding: 12px 24px;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: opacity 0.18s, transform 0.12s;
+  box-shadow: 2px 2px 0 #1a0a02, 3px 3px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid #1a0a02;
+}
+
+.proj-link::before {
+  content: '';
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f2e8cc'%3E%3Cpath d='M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.02c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.34-1.74-1.34-1.74-1.08-.74.08-.72.08-.72 1.2.08 1.82 1.22 1.82 1.22 1.07 1.82 2.8 1.3 3.48.98.1-.77.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.3-1.23 3.3-1.23.66 1.66.26 2.88.12 3.18.78.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.42.36.8 1.1.8 2.22v3.3c0 .32.22.7.82.58C20.56 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z'/%3E%3C/svg%3E") no-repeat center/contain;
+}
+
+.proj-link:hover {
+  opacity: 0.85;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #1a0a02;
+}
+
+/* ── CV PDF VIEWER ── */
+#modal-cv .modal-inner.modal-cv-viewer {
+  width: min(920px, 95vw);
+  height: 90vh;
+  background: #0d0b08;
+  border: 2px solid #5a3a10;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.97);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh;
+  animation: popIn .22s ease;
+}
+
+.cv-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #1a1208;
+  border-bottom: 1px solid #5a3a10;
+  flex-shrink: 0;
+}
+
+.cv-viewer-title {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: #ffb840;
+  letter-spacing: 3px;
+  text-shadow: 0 0 8px rgba(255, 184, 64, 0.5);
+}
+
+.cv-viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cv-dl-btn {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  letter-spacing: 2px;
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  padding: 3px 14px;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+
+.cv-dl-btn:hover {
+  background: rgba(0, 255, 136, 0.18);
+  color: #00ffaa;
+}
+
+#modal-cv .modal-close {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  color: #ff4040;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid #ff4040;
+  padding: 3px 12px;
+  cursor: pointer;
+  position: static;
+  float: none;
+  margin: 0;
+  transition: background .15s, color .15s;
+}
+
+#modal-cv .modal-close:hover {
+  background: #ff4040;
+  color: #000;
+}
+
+#cv-iframe {
+  flex: 1;
+  min-height: 0;
+}

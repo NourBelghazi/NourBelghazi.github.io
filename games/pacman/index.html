@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base href="/games/pacman/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAC-MAN — TeaVM</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Courier New', monospace;
+    }
+
+    #gameCanvas {
+      display: block;
+      image-rendering: pixelated;
+      max-width: 100vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+    }
+
+    #hint {
+      color: rgba(255, 255, 150, 0.5);
+      font-size: 12px;
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Pre-loaded sprites (required by ImageLoader before game starts) -->
+  <div style="display:none">
+    <img id="img-pacmanRight" src="images/pacmanRight.png">
+    <img id="img-pacmanUp" src="images/pacmanUp.png">
+    <img id="img-pacmanDown" src="images/pacmanDown.png">
+    <img id="img-pacmanLeft" src="images/pacmanLeft.png">
+    <img id="img-scaredGhost" src="images/scaredGhost.png">
+    <img id="img-cherry" src="images/cherry.png">
+    <img id="img-wall" src="images/wall.png">
+    <img id="img-blueGhost" src="images/blueGhost.png">
+    <img id="img-redGhost" src="images/redGhost.png">
+    <img id="img-pinkGhost" src="images/pinkGhost.png">
+    <img id="img-orangeGhost" src="images/orangeGhost.png">
+    <img id="img-powerFood" src="images/powerFood.png">
+  </div>
+
+  <canvas id="gameCanvas"></canvas>
+  <p id="hint">ARROWS — move &nbsp;|&nbsp; P — pause &nbsp;|&nbsp; ENTER — restart</p>
+
+  <script src="classes.js"></script>
+  <script>
+    // TeaVM UMD module exports main() but doesn't call it automatically
+    if (typeof main === 'function') {
+      main();
+    } else if (typeof classes !== 'undefined' && typeof classes.main === 'function') {
+      classes.main();
+    }
+  </script>
+</body>
+
+</html>
