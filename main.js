@@ -1493,13 +1493,17 @@ let soundOn = true; // son ON par défaut
 function toggleSound() {
   soundOn = !soundOn;
   const btn = document.getElementById('tv-hint');
+  const iconOn = document.getElementById('icon-sound-on');
+  const iconOff = document.getElementById('icon-sound-off');
   if (soundOn) {
     startTVSound();
-    btn.textContent = '🔊';
+    if (iconOn) iconOn.style.display = '';
+    if (iconOff) iconOff.style.display = 'none';
     btn.classList.remove('on');
   } else {
     stopTVSound();
-    btn.textContent = '🔇';
+    if (iconOn) iconOn.style.display = 'none';
+    if (iconOff) iconOff.style.display = '';
     btn.classList.add('on');
   }
 }
@@ -1680,15 +1684,15 @@ function contactSend() {
     padding:11px;border:none;border-radius:2px;text-decoration:none;margin-bottom:10px;cursor:pointer;`;
   inner.innerHTML = `
     <button class="modal-close" onclick="closeContact()">✕</button>
-    <h2 style="font-family:'Courier Prime',monospace;font-size:18px;letter-spacing:2px;margin-bottom:14px;color:#1a0f00;">✉ MESSAGE PRÊT</h2>
+    <h2 style="font-family:'Courier Prime',monospace;font-size:18px;letter-spacing:2px;margin-bottom:14px;color:#1a0f00;">MESSAGE PRÊT</h2>
     <p style="font-family:'Courier Prime',monospace;font-size:12px;color:#4a3010;margin-bottom:18px;line-height:1.7;">
       Choisis comment envoyer :
     </p>
     <a href="${gmailUrl}" target="_blank" rel="noopener" onclick="closeContact()" style="${btnStyle}background:#1a3a1a;color:#f2e8cc;">
-      ✉ Gmail
+      Gmail
     </a>
     <a href="${outlookUrl}" target="_blank" rel="noopener" onclick="closeContact()" style="${btnStyle}background:#0f2a4a;color:#f2e8cc;">
-      ✉ Outlook Web
+      Outlook Web
     </a>
     <a href="${mailtoUrl}" target="_blank" onclick="closeContact()" style="${btnStyle}background:rgba(80,45,10,0.08);color:#4a2a08;border:1px solid rgba(80,45,10,0.3);font-size:11px;letter-spacing:1px;font-weight:normal;">
       Ouvrir client mail local (Outlook app, Thunderbird…)

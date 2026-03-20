@@ -53,20 +53,40 @@
 
   <!-- TV Interference overlay — toggle avec bouton ou T -->
   <canvas id="tv-static"></canvas>
-  <button id="tv-hint" onclick="toggleSound()" style="
+  <button id="tv-hint" onclick="toggleSound()" title="Toggle sound" style="
   position:fixed; top:14px; left:18px; z-index:99999;
-  font-size:26px; background:none; border:none;
-  padding:4px; cursor:pointer; line-height:1;
-">🔊</button>
+  background:none; border:none;
+  padding:4px; cursor:pointer; line-height:1; color:#fff; opacity:0.75; transition:opacity 0.2s;
+" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.75">
+    <!-- sound-on icon (default) -->
+    <svg id="icon-sound-on" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+    <!-- sound-off icon (hidden by default) -->
+    <svg id="icon-sound-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="23" y1="9" x2="17" y2="15" />
+      <line x1="17" y1="9" x2="23" y2="15" />
+    </svg>
+  </button>
 
-  <!-- ✉ Mail button -->
+  <!-- Mail button -->
   <button id="mail-btn" onclick="openContact()" title="Contact me" style="
   position:fixed; top:14px; right:18px; z-index:99999;
-  font-size:22px; background:none; border:none;
+  background:none; border:none;
   padding:4px 6px; cursor:pointer; line-height:1;
   color:#fff; opacity:0.75; transition:opacity 0.2s;
-  font-family:'Courier Prime',monospace; letter-spacing:1px;
-" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.75">✉</button>
+" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.75">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <polyline points="2,4 12,13 22,4" />
+    </svg>
+  </button>
 
   <!-- Contact Modal -->
   <div id="modal-contact" class="modal" role="dialog" aria-modal="true">
@@ -100,7 +120,7 @@
       font-size:12px; letter-spacing:2px; font-weight:700;
       padding:11px; background:#1a1a1a; color:#f2e8cc;
       border:none; border-radius:2px; cursor:pointer; transition:opacity 0.15s;
-    " onmouseenter="this.style.opacity=0.85" onmouseleave="this.style.opacity=1">SEND ✉</button>
+    " onmouseenter="this.style.opacity=0.85" onmouseleave="this.style.opacity=1">SEND →</button>
     </div>
   </div>
 
