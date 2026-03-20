@@ -1483,8 +1483,9 @@ function startTVSound() {
 
 function stopTVSound() {
   if (!tvAudioCtx) return;
-  tvGainNode.gain.cancelScheduledValues(tvAudioCtx.currentTime);
-  tvGainNode.gain.setTargetAtTime(0, tvAudioCtx.currentTime, 0.10); // fade-out
+  const t = tvAudioCtx.currentTime;
+  tvGainNode.gain.cancelScheduledValues(t);
+  tvGainNode.gain.setValueAtTime(0, t); // cut immédiat et fiable
 }
 
 
